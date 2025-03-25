@@ -37,22 +37,31 @@
         </div>
     </div>
    
-   <!-- Mobile Navigation Bar (solo para móvil) -->
-   <div class="md:hidden flex justify-center my-4 px-4">
+  <!-- Modal de búsqueda móvil -->
+<div class="bg-slate-950/70 h-screen w-full fixed top-0 left-0 z-50 hidden" id="modal">
+    <div class="bg-white h-1/2 p-8 absolute top-0 w-full">
+        <div class="shadow-md border border-gray-200 h-14 rounded-lg focus-within:border-gray-900">
+            <input type="text" class="w-full h-full outline-none px-2">
+        </div>
+    </div>
+</div>
+
+<!-- Barra de navegación móvil -->
+<div class="md:hidden flex justify-center my-4 px-4">
     <div class="flex justify-between items-center bg-white shadow-md rounded-full px-6 py-3 w-full max-w-md">
-        <button class="flex items-center justify-center text-gray-700 flex-1">
+        <button class="flex items-center justify-center text-gray-700 hover:text-blue-600 flex-1 mobile-nav-button">
             <span class="text-sm">Location</span>
         </button>
         <div class="h-10 w-px bg-gray-300"></div>
-        <button class="flex items-center justify-center text-gray-700  flex-1">
+        <button class="flex items-center justify-center text-gray-700 hover:text-blue-600 flex-1 mobile-nav-button">
             <span class="text-sm">Guests</span>
         </button>
         <div class="h-10 w-px bg-gray-300"></div>
-        <button class="flex items-center justify-center flex-1">
+        <button class="flex items-center justify-center flex-1 mobile-nav-button">
             <img src="./src/images/icons/search.svg" alt="Search" class="w-5 h-5">
         </button>
     </div>
-   </div>
+</div>
    </header>
 
    <!-- Sección principal -->
@@ -69,5 +78,6 @@
         </div>
     </div>
    </section>
+   
 </body>
 </html>

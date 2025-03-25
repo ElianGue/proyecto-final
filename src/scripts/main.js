@@ -47,3 +47,25 @@ function createStayCards() {
 
 // Llamar a la función cuando el DOM esté cargado
 document.addEventListener("DOMContentLoaded", createStayCards);
+
+document.addEventListener("DOMContentLoaded", function () {
+  const modal = document.getElementById("modal");
+  const body = document.body;
+  const navButtons = document.querySelectorAll(".mobile-nav-button");
+
+  // Mostrar modal y bloquear scroll
+  navButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      modal.classList.remove("hidden");
+      body.classList.add("overflow-hidden");
+    });
+  });
+
+  // Ocultar modal y restaurar scroll
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.classList.add("hidden");
+      body.classList.remove("overflow-hidden");
+    }
+  });
+});
