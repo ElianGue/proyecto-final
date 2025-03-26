@@ -13,16 +13,16 @@ function createStayCards() {
   stays.forEach((stays) => {
     // Crear elemento de tarjeta
     const card = document.createElement("div");
-    card.className = "shadow-xl w-80 rounded-xl border-white cursor-pointer";
+    card.className = "w-80 rounded-xl border-white cursor-pointer";
 
     // Contenido de la tarjeta
     card.innerHTML = `
-            <figure class="w-full overflow-hidden rounded-t-xl">
+            <figure class="w-full overflow-hidden rounded-xl">
                 <img src="${stays.photo}" 
                      alt="${stays.title}" 
                      class="w-full h-60 object-cover">
             </figure>
-            <div class="px-4 pt-4 border-t-1 flex flex-col gap-2 border-gray-300">
+            <div class="px-4 pt-4 flex flex-col gap-2">
                 <div class="flex justify-between items-center">
                     <p class="text-gray-500">
                         ${stays.type}${
@@ -66,6 +66,54 @@ document.addEventListener("DOMContentLoaded", function () {
     if (e.target === modal) {
       modal.classList.add("hidden");
       body.classList.remove("overflow-hidden");
+    }
+  });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Elementos del modal desktop
+  const desktopModal = document.getElementById("desktopModal");
+  const desktopLocationBtn = document.getElementById("desktopLocationBtn");
+  const desktopGuestsBtn = document.getElementById("desktopGuestsBtn");
+  const desktopSearchBtn = document.getElementById("desktopSearchBtn");
+
+  // Función para abrir el modal
+  function openDesktopModal() {
+    desktopModal.classList.remove("hidden", "opacity-0");
+    desktopModal.classList.add("opacity-100");
+    document.body.style.overflow = "hidden";
+  }
+
+  // Función para cerrar el modal
+  function closeDesktopModal() {
+    desktopModal.classList.add("opacity-0");
+    desktopModal.querySelector("div").classList.add();
+
+    setTimeout(() => {
+      desktopModal.classList.add("hidden");
+      document.body.style.overflow = "auto";
+    }, 300);
+  }
+
+  // Event listeners para los botones
+  if (desktopLocationBtn)
+    desktopLocationBtn.addEventListener("click", openDesktopModal);
+  if (desktopGuestsBtn)
+    desktopGuestsBtn.addEventListener("click", openDesktopModal);
+  if (desktopSearchBtn)
+    desktopSearchBtn.addEventListener("click", openDesktopModal);
+
+  // Cerrar al hacer clic fuera del modal
+  desktopModal.addEventListener("click", function (e) {
+    if (e.target === desktopModal) {
+      closeDesktopModal();
+    }
+  });
+
+  // Cerrar con la tecla ESC
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !desktopModal.classList.contains("hidden")) {
+      closeDesktopModal();
     }
   });
 });
