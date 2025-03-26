@@ -117,3 +117,116 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  const guestsTrigger = document.getElementById("guestsTrigger");
+  const guestsFilter = document.getElementById("guestsFilter");
+  const minusBtns = document.querySelectorAll(".minus-btn");
+  const plusBtns = document.querySelectorAll(".plus-btn");
+  const counts = document.querySelectorAll(".count");
+
+  // Mostrar/ocultar filtro
+  guestsTrigger.addEventListener("click", function (e) {
+    e.stopPropagation();
+    guestsFilter.classList.toggle("hidden");
+  });
+
+  // Cerrar al hacer clic fuera
+  document.addEventListener("click", function () {
+    guestsFilter.classList.add("hidden");
+  });
+
+  // Contador de guests
+  plusBtns.forEach((btn, index) => {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      let current = parseInt(counts[index].textContent);
+      counts[index].textContent = current + 1;
+      updateGuestsInput();
+    });
+  });
+
+  minusBtns.forEach((btn, index) => {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      let current = parseInt(counts[index].textContent);
+      if (current > 0) {
+        counts[index].textContent = current - 1;
+        updateGuestsInput();
+      }
+    });
+  });
+
+  function updateGuestsInput() {
+    const adults = parseInt(counts[0].textContent);
+    const children = parseInt(counts[1].textContent);
+    const total = adults + children;
+    guestsTrigger.querySelector("input").value =
+      total > 0 ? `${total} guest${total !== 1 ? "s" : ""}` : "Add guests";
+  }
+});
+
+// para la version mobile
+document.addEventListener("DOMContentLoaded", function () {
+  // Elementos del DOM
+  const mobileGuestsTrigger = document.getElementById("mobileGuestsTrigger");
+  const mobileGuestsInput = document.getElementById("mobileGuestsInput");
+  const mobileGuestsFilter = document.getElementById("mobileGuestsFilter");
+  const mobileMinusBtns = document.querySelectorAll(".mobile-minus-btn");
+  const mobilePlusBtns = document.querySelectorAll(".mobile-plus-btn");
+  const mobileCounts = document.querySelectorAll(".mobile-count");
+  const modal = document.getElementById("modal");
+  const closeModal = document.getElementById("closeModal");
+
+  // Mostrar modal al hacer clic en Guests
+  mobileGuestsTrigger.addEventListener("click", function () {
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  });
+
+  // Cerrar modal
+  closeModal.addEventListener("click", function () {
+    modal.classList.add("hidden");
+    document.body.style.overflow = "auto";
+  });
+
+  // Funcionalidad de los contadores
+  mobilePlusBtns.forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const type = this.getAttribute("data-type");
+      const countElement = document.querySelector(
+        `.mobile-count[data-type="${type}"]`
+      );
+      let current = parseInt(countElement.textContent);
+      countElement.textContent = current + 1;
+      updateMobileGuestsInput();
+    });
+  });
+
+  mobileMinusBtns.forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const type = this.getAttribute("data-type");
+      const countElement = document.querySelector(
+        `.mobile-count[data-type="${type}"]`
+      );
+      let current = parseInt(countElement.textContent);
+      if (current > 0) {
+        countElement.textContent = current - 1;
+        updateMobileGuestsInput();
+      }
+    });
+  });
+
+  // Actualizar el input de Guests
+  function updateMobileGuestsInput() {
+    const adults = parseInt(
+      document.querySelector('.mobile-count[data-type="adults"]').textContent
+    );
+    const children = parseInt(
+      document.querySelector('.mobile-count[data-type="children"]').textContent
+    );
+    const total = adults + children;
+    mobileGuestsInput.value =
+      total > 0 ? `${total} guest${total !== 1 ? "s" : ""}` : "Add guests";
+  }
+});
