@@ -14,22 +14,31 @@
         
 <!-- Modal Desktop -->
 <div id="desktopModal" class="fixed inset-0 bg-slate-950/70 bg-opacity-50 z-50 top-0 hidden">
-    <div class="bg-white h-1/2">
-        <div class="p-6">
+    <div class="bg-white h-2/3 w-full">
+        <div class="p-6 h-1/2">
             <!-- Barra de búsqueda dentro del modal -->
-            <div class="flex items-center space-x-4">
-                <div class="flex-1">
-                    <label class="block text-sm font-medium mb-1">Location</label>
-                    <input type="text" placeholder="Add city" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none  focus:ring-gray-800 focus:border-gray-800">
+            <div class="flex gap-0">
+                <!-- Location -->
+                <div class="flex-1 border border-gray-300 rounded-l-lg p-1 group focus-within:border-gray-800">
+                    <label class="block text-sm font-medium mb-1 px-2">Location</label>
+                    <input type="text" placeholder="Add city" 
+                           class="w-full p-3 focus:outline-none border-0 rounded-lg group-focus-within:bg-gray-200">
                 </div>
-                <div class="flex-1">
-                    <label class="block text-sm font-medium mb-1">Guests</label>
-                    <input type="text" placeholder="Add guests" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-gray-800 focus:border-gray-800">
+                
+                <!-- Guests -->
+                <div class="flex-1 border border-gray-300 p-1 group focus-within:border-gray-800">
+                    <label class="block text-sm font-medium mb-1 px-2">Guests</label>
+                    <input type="text" placeholder="Add guests" 
+                           class="w-full p-3 focus:outline-none border-0 rounded-lg group-focus-within:bg-gray-200">
                 </div>
-                <button class="self-end bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg  flex items-center">
-                    <img src="./src/images/icons/search.svg" alt="Search" class="w-5 h-5 mr-2">
-                    <span>Search</span>
-                </button>
+                
+                <!-- Search -->
+                <div class="flex-1 border border-gray-300 rounded-r-lg p-1 flex items-center justify-center bg-gray-50 group">
+                    <button class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg flex items-center border border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        <img src="./src/images/icons/search.svg" alt="Search" class="w-5 h-5 mr-2">
+                        <span>Search</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
