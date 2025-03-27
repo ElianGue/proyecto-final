@@ -1,232 +1,376 @@
-/**
- * Aquí estará la lógica principal de la aplicación.
- * Este bloque de código contiene la funcionalidad principal
- * que define el comportamiento del programa.
- */
 import { stays } from "./stays.js";
 
-// Función para crear las tarjetas de alojamiento
-function createStayCards() {
-  const cardContainer = document.getElementById("card_container");
-  cardContainer.innerHTML = ""; // Limpiar el contenedor
+// Variables globales para los filtros
+let currentFilters = {
+  location: "",
+  adults: 0,
+  children: 0,
+};
 
-  stays.forEach((stays) => {
-    // Crear elemento de tarjeta
-    const card = document.createElement("div");
-    card.className = "w-80 rounded-xl border-white cursor-pointer";
+// Función para mostrar sugerencias de ubicación
+function showLocationSuggestions(inputElement) {
+  const inputValue = inputElement.value.toLowerCase();
+  const suggestionsContainer = document.getElementById(
+    `${inputElement.id}Suggestions`
+  );
 
-    // Contenido de la tarjeta
-    card.innerHTML = `
-            <figure class="w-full overflow-hidden rounded-xl">
-                <img src="${stays.photo}" 
-                     alt="${stays.title}" 
-                     class="w-full h-60 object-cover">
-            </figure>
-            <div class="px-4 pt-4 flex flex-col gap-2">
-                <div class="flex justify-between items-center">
-                    <p class="text-gray-500">
-                        ${stays.type}${
-      stays.beds ? ` · ${stays.beds} ${stays.beds > 1 ? "beds" : "bed"}` : ""
-    }
-                    </p>
-                    <div class="flex items-center">
-                        <img src="./src/images/icons/star.svg" alt="rating" class="w-4 h-4 text-red-500">
-                        <span class="text-black ml-1">${stays.rating}</span>
-                    </div>
-                </div>
-                <h2 class="text-lg font-semibold text-gray-800">${
-                  stays.title
-                }</h2>
-            </div>
-        `;
+  if (!inputValue) {
+    suggestionsContainer.innerHTML = "";
+    suggestionsContainer.classList.add("hidden");
+    return;
+  }
 
-    // Agregar tarjeta al contenedor
-    cardContainer.appendChild(card);
-  });
+  const uniqueCities = [...new Set(stays.map((stay) => stay.city))];
+  const matchedCities = uniqueCities.filter((city) =>
+    city.toLowerCase().includes(inputValue)
+  );
+
+  suggestionsContainer.innerHTML = matchedCities
+    .map(
+      (city) => `
+    <div class="p-2 hover:bg-gray-100 cursor-pointer">${city}</div>
+  `
+    )
+    .join("");
+
+  if (matchedCities.length > 0) {
+    suggestionsContainer.classList.remove("hidden");
+
+    // Agregar event listeners a las sugerencias
+    suggestionsContainer.querySelectorAll("div").forEach((suggestion) => {
+      suggestion.addEventListener("click", () => {
+        inputElement.value = suggestion.textContent;
+        currentFilters.location = suggestion.textContent;
+        suggestionsContainer.classList.add("hidden");
+      });
+    });
+  } else {
+    suggestionsContainer.classList.add("hidden");
+  }
 }
 
-// Llamar a la función cuando el DOM esté cargado
-document.addEventListener("DOMContentLoaded", createStayCards);
+// Función para crear las tarjetas con SuperHost
+function createStayCards(filteredStays = stays) {
+  const cardContainer = document.getElementById("card_container");
+  const staysCounter = document.getElementById("stays-counter");
+  cardContainer.innerHTML = "";
 
-document.addEventListener("DOMContentLoaded", function () {
-  const modal = document.getElementById("modal");
-  const body = document.body;
-  const navButtons = document.querySelectorAll(".mobile-nav-button");
+  if (filteredStays.length === 0) {
+    cardContainer.innerHTML = `
+      <div class="col-span-3 py-12 text-center">
+        <p class="text-lg text-gray-500">No stays found matching your criteria</p>
+        <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+          Reset filters
+        </button>
+      </div>
+    `;
+    staysCounter.textContent = "0 stays";
+    return;
+  }
 
-  // Mostrar modal y bloquear scroll
-  navButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      modal.classList.remove("hidden");
-      body.classList.add("overflow-hidden");
+  filteredStays.forEach((stay) => {
+    const card = document.createElement("div");
+    card.className =
+      "w-full rounded-xl overflow-hidden transition-shadow duration-300";
+
+    card.innerHTML = `
+      <figure class="w-full h-60 overflow-hidden rounded-xl">
+        <img src="${stay.photo}" 
+             alt="${stay.title}" 
+             class="w-full h-full object-cover hover:scale-105 transition duration-300">
+      </figure>
+      <div class="p-4 flex flex-col gap-2">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center gap-2 flex-wrap">
+            ${
+              stay.superHost
+                ? `<span class="border border-gray-800 rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap">
+                SUPERHOST
+              </span>`
+                : ""
+            }
+            <p class="text-gray-500 text-sm">
+              ${stay.type}${
+      stay.beds ? ` · ${stay.beds} ${stay.beds > 1 ? "beds" : "bed"}` : ""
+    }
+            </p>
+          </div>
+          <div class="flex items-center">
+            <img src="./src/images/icons/star.svg" alt="rating" class="w-4 h-4">
+            <span class="text-black ml-1 text-sm">${stay.rating}</span>
+          </div>
+        </div>
+        <h2 class="text-lg font-semibold text-gray-800 mt-1">${stay.title}</h2>
+      </div>
+    `;
+
+    cardContainer.appendChild(card);
+  });
+
+  staysCounter.textContent = `${filteredStays.length} ${
+    filteredStays.length === 1 ? "stay" : "stays"
+  }`;
+}
+
+// Función para aplicar filtros
+function applyFilters() {
+  const filtered = stays.filter((stay) => {
+    // Filtrar por ubicación (ciudad o título)
+    const locationMatch =
+      currentFilters.location === "" ||
+      stay.city.toLowerCase().includes(currentFilters.location.toLowerCase()) ||
+      stay.title.toLowerCase().includes(currentFilters.location.toLowerCase());
+
+    // Filtrar por capacidad
+    const totalGuests = currentFilters.adults + currentFilters.children;
+    const capacityMatch = totalGuests === 0 || stay.maxGuests >= totalGuests;
+
+    return locationMatch && capacityMatch;
+  });
+
+  // Actualizar el título con los resultados
+  const titleElement = document.querySelector("h1");
+  if (currentFilters.location) {
+    const uniqueCities = [...new Set(filtered.map((stay) => stay.city))];
+    titleElement.textContent =
+      uniqueCities.length === 1
+        ? `Stays in ${uniqueCities[0]}`
+        : `Stays matching "${currentFilters.location}"`;
+  } else {
+    titleElement.textContent = "Stays in Finland";
+  }
+
+  createStayCards(filtered);
+}
+
+// Función para actualizar el input de huéspedes (desktop)
+function updateGuestsInput() {
+  const total = currentFilters.adults + currentFilters.children;
+  const input = document.querySelector("#guestsInput");
+  if (input) {
+    input.value =
+      total > 0
+        ? `${currentFilters.adults} adult${
+            currentFilters.adults !== 1 ? "s" : ""
+          }` +
+          `${
+            currentFilters.children > 0
+              ? `, ${currentFilters.children} child${
+                  currentFilters.children !== 1 ? "ren" : ""
+                }`
+              : ""
+          }`
+        : "Add guests";
+  }
+}
+
+// Función para actualizar el input de huéspedes (mobile)
+function updateMobileGuestsInput() {
+  const total = currentFilters.adults + currentFilters.children;
+  const input = document.querySelector("#mobileGuestsInput");
+  if (input) {
+    input.value =
+      total > 0
+        ? `${currentFilters.adults} adult${
+            currentFilters.adults !== 1 ? "s" : ""
+          }` +
+          `${
+            currentFilters.children > 0
+              ? `, ${currentFilters.children} child${
+                  currentFilters.children !== 1 ? "ren" : ""
+                }`
+              : ""
+          }`
+        : "Add guests";
+  }
+}
+
+// Función para resetear filtros
+function resetFilters() {
+  currentFilters = {
+    location: "",
+    adults: 0,
+    children: 0,
+  };
+
+  // Resetear inputs
+  document
+    .querySelectorAll("#desktopLocationInput, #mobileLocationInput")
+    .forEach((input) => {
+      input.value = "";
+      document.getElementById(`${input.id}Suggestions`).classList.add("hidden");
     });
+  document
+    .querySelectorAll(".count, .mobile-count")
+    .forEach((el) => (el.textContent = "0"));
+  document
+    .querySelectorAll("#guestsInput, #mobileGuestsInput")
+    .forEach((input) => (input.value = "Add guests"));
+
+  applyFilters();
+}
+
+// Función para inicializar los event listeners
+function initEventListeners() {
+  // Event listeners para abrir modales
+  document
+    .getElementById("mobileGuestsTrigger")
+    ?.addEventListener("click", () => {
+      document.getElementById("modal").classList.remove("hidden");
+    });
+
+  document
+    .getElementById("desktopLocationBtn")
+    ?.addEventListener("click", () => {
+      document.getElementById("desktopModal").classList.remove("hidden");
+    });
+
+  document.getElementById("desktopGuestsBtn")?.addEventListener("click", () => {
+    document.getElementById("desktopModal").classList.remove("hidden");
+    document.getElementById("guestsFilter").classList.remove("hidden");
   });
 
-  // Ocultar modal y restaurar scroll
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      modal.classList.add("hidden");
-      body.classList.remove("overflow-hidden");
-    }
-  });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  // Elementos del modal desktop
-  const desktopModal = document.getElementById("desktopModal");
-  const desktopLocationBtn = document.getElementById("desktopLocationBtn");
-  const desktopGuestsBtn = document.getElementById("desktopGuestsBtn");
-  const desktopSearchBtn = document.getElementById("desktopSearchBtn");
-
-  // Función para abrir el modal
-  function openDesktopModal() {
-    desktopModal.classList.remove("hidden", "opacity-0");
-    desktopModal.classList.add("opacity-100");
-    document.body.style.overflow = "hidden";
-  }
-
-  // Función para cerrar el modal
-  function closeDesktopModal() {
-    desktopModal.classList.add("opacity-0");
-    desktopModal.querySelector("div").classList.add();
-
-    setTimeout(() => {
-      desktopModal.classList.add("hidden");
-      document.body.style.overflow = "auto";
-    }, 300);
-  }
-
-  // Event listeners para los botones
-  if (desktopLocationBtn)
-    desktopLocationBtn.addEventListener("click", openDesktopModal);
-  if (desktopGuestsBtn)
-    desktopGuestsBtn.addEventListener("click", openDesktopModal);
-  if (desktopSearchBtn)
-    desktopSearchBtn.addEventListener("click", openDesktopModal);
-
-  // Cerrar al hacer clic fuera del modal
-  desktopModal.addEventListener("click", function (e) {
-    if (e.target === desktopModal) {
-      closeDesktopModal();
-    }
+  // Event listeners para búsqueda
+  document
+    .getElementById("desktopSearchBtn")
+    ?.addEventListener("click", applyFilters);
+  document.getElementById("mobileSearchBtn")?.addEventListener("click", () => {
+    applyFilters();
+    document.getElementById("modal").classList.add("hidden");
   });
 
-  // Cerrar con la tecla ESC
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && !desktopModal.classList.contains("hidden")) {
-      closeDesktopModal();
-    }
-  });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  const guestsTrigger = document.getElementById("guestsTrigger");
-  const guestsFilter = document.getElementById("guestsFilter");
-  const minusBtns = document.querySelectorAll(".minus-btn");
-  const plusBtns = document.querySelectorAll(".plus-btn");
-  const counts = document.querySelectorAll(".count");
-
-  // Mostrar/ocultar filtro
-  guestsTrigger.addEventListener("click", function (e) {
+  // Mostrar filtro de huéspedes en desktop (corregido para persistencia)
+  document.getElementById("guestsTrigger")?.addEventListener("click", (e) => {
     e.stopPropagation();
-    guestsFilter.classList.toggle("hidden");
+    document.getElementById("guestsFilter").classList.remove("hidden");
   });
 
-  // Cerrar al hacer clic fuera
-  document.addEventListener("click", function () {
-    guestsFilter.classList.add("hidden");
+  // Evitar que se cierre el filtro al interactuar con él
+  document.getElementById("guestsFilter")?.addEventListener("click", (e) => {
+    e.stopPropagation();
   });
 
-  // Contador de guests
-  plusBtns.forEach((btn, index) => {
-    btn.addEventListener("click", function (e) {
+  // Actualizar filtros de ubicación con autocompletado
+  document
+    .getElementById("desktopLocationInput")
+    ?.addEventListener("input", (e) => {
+      currentFilters.location = e.target.value;
+      showLocationSuggestions(e.target);
+    });
+
+  document
+    .getElementById("mobileLocationInput")
+    ?.addEventListener("input", (e) => {
+      currentFilters.location = e.target.value;
+      showLocationSuggestions(e.target);
+    });
+
+  // Permitir escribir en el input de huéspedes (solo lectura visual)
+  document.getElementById("guestsInput")?.addEventListener("focus", () => {
+    document.getElementById("guestsFilter").classList.remove("hidden");
+  });
+
+  // Contadores de huéspedes desktop
+  document.querySelectorAll(".plus-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      let current = parseInt(counts[index].textContent);
-      counts[index].textContent = current + 1;
+      const container = e.target.closest(".flex.items-center.space-x-4");
+      const isAdult = container.previousElementSibling
+        .querySelector("p")
+        .textContent.includes("Adults");
+      const countElement = container.querySelector(".count");
+
+      if (isAdult) currentFilters.adults++;
+      else currentFilters.children++;
+
+      countElement.textContent = isAdult
+        ? currentFilters.adults
+        : currentFilters.children;
       updateGuestsInput();
     });
   });
 
-  minusBtns.forEach((btn, index) => {
-    btn.addEventListener("click", function (e) {
+  document.querySelectorAll(".minus-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      let current = parseInt(counts[index].textContent);
-      if (current > 0) {
-        counts[index].textContent = current - 1;
-        updateGuestsInput();
-      }
+      const container = e.target.closest(".flex.items-center.space-x-4");
+      const isAdult = container.previousElementSibling
+        .querySelector("p")
+        .textContent.includes("Adults");
+      const countElement = container.querySelector(".count");
+
+      if (isAdult && currentFilters.adults > 0) currentFilters.adults--;
+      else if (!isAdult && currentFilters.children > 0)
+        currentFilters.children--;
+
+      countElement.textContent = isAdult
+        ? currentFilters.adults
+        : currentFilters.children;
+      updateGuestsInput();
     });
   });
 
-  function updateGuestsInput() {
-    const adults = parseInt(counts[0].textContent);
-    const children = parseInt(counts[1].textContent);
-    const total = adults + children;
-    guestsTrigger.querySelector("input").value =
-      total > 0 ? `${total} guest${total !== 1 ? "s" : ""}` : "Add guests";
-  }
-});
-
-// para la version mobile
-document.addEventListener("DOMContentLoaded", function () {
-  // Elementos del DOM
-  const mobileGuestsTrigger = document.getElementById("mobileGuestsTrigger");
-  const mobileGuestsInput = document.getElementById("mobileGuestsInput");
-  const mobileGuestsFilter = document.getElementById("mobileGuestsFilter");
-  const mobileMinusBtns = document.querySelectorAll(".mobile-minus-btn");
-  const mobilePlusBtns = document.querySelectorAll(".mobile-plus-btn");
-  const mobileCounts = document.querySelectorAll(".mobile-count");
-  const modal = document.getElementById("modal");
-  const closeModal = document.getElementById("closeModal");
-
-  // Mostrar modal al hacer clic en Guests
-  mobileGuestsTrigger.addEventListener("click", function () {
-    modal.classList.remove("hidden");
-    document.body.style.overflow = "hidden";
-  });
-
-  // Cerrar modal
-  closeModal.addEventListener("click", function () {
-    modal.classList.add("hidden");
-    document.body.style.overflow = "auto";
-  });
-
-  // Funcionalidad de los contadores
-  mobilePlusBtns.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const type = this.getAttribute("data-type");
+  // Contadores de huéspedes mobile
+  document.querySelectorAll(".mobile-plus-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const type = e.target.closest("button").getAttribute("data-type");
       const countElement = document.querySelector(
         `.mobile-count[data-type="${type}"]`
       );
-      let current = parseInt(countElement.textContent);
-      countElement.textContent = current + 1;
+
+      currentFilters[type]++;
+      countElement.textContent = currentFilters[type];
       updateMobileGuestsInput();
     });
   });
 
-  mobileMinusBtns.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const type = this.getAttribute("data-type");
+  document.querySelectorAll(".mobile-minus-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const type = e.target.closest("button").getAttribute("data-type");
       const countElement = document.querySelector(
         `.mobile-count[data-type="${type}"]`
       );
-      let current = parseInt(countElement.textContent);
-      if (current > 0) {
-        countElement.textContent = current - 1;
+
+      if (currentFilters[type] > 0) {
+        currentFilters[type]--;
+        countElement.textContent = currentFilters[type];
         updateMobileGuestsInput();
       }
     });
   });
 
-  // Actualizar el input de Guests
-  function updateMobileGuestsInput() {
-    const adults = parseInt(
-      document.querySelector('.mobile-count[data-type="adults"]').textContent
-    );
-    const children = parseInt(
-      document.querySelector('.mobile-count[data-type="children"]').textContent
-    );
-    const total = adults + children;
-    mobileGuestsInput.value =
-      total > 0 ? `${total} guest${total !== 1 ? "s" : ""}` : "Add guests";
-  }
+  // Cerrar modales y sugerencias al hacer clic fuera
+  document.addEventListener("click", (e) => {
+    // Solo ocultar si se hace clic fuera del filtro y del trigger
+    if (
+      !e.target.closest("#guestsFilter") &&
+      !e.target.closest("#guestsTrigger")
+    ) {
+      document.getElementById("guestsFilter")?.classList.add("hidden");
+    }
+
+    document.querySelectorAll(".suggestions-container").forEach((container) => {
+      if (!e.target.closest(`#${container.id.replace("Suggestions", "")}`)) {
+        container.classList.add("hidden");
+      }
+    });
+  });
+
+  // Cerrar modales con botones
+  document.getElementById("closeModal")?.addEventListener("click", () => {
+    document.getElementById("modal").classList.add("hidden");
+  });
+
+  document.getElementById("desktopModal")?.addEventListener("click", (e) => {
+    if (e.target === document.getElementById("desktopModal")) {
+      document.getElementById("desktopModal").classList.add("hidden");
+    }
+  });
+}
+
+// Inicializar la aplicación
+document.addEventListener("DOMContentLoaded", () => {
+  createStayCards();
+  initEventListeners();
+  window.resetFilters = resetFilters;
 });
