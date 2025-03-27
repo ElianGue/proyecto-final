@@ -7,7 +7,7 @@
     <script type="module" src="./src/scripts/main.js" defer></script>
     <title>Mi Proyecto Final</title>
 </head>
-<body>
+<body class="lg:max-w-[1024px] lg:mx-auto">
    <header class="relative">
     <div class="px-4 py-3 flex justify-between items-center">
         <img src="./src/images/icons/logo-f7862584.svg" alt="logo de la pagina">
@@ -201,10 +201,10 @@
             <h1 class="text-3xl font-bold">Stays in Finland</h1>
         </div>
         
-        <!-- Contenedor de tarjetas -->
-        <div class="w-full p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="card_container">
-            <!-- Las tarjetas se generarán dinámicamente desde main.js -->
-        </div>
+        <!-- Contenedor de tarjetas - modificado para mejor espaciado -->
+    <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="card_container">
+        <!-- Las tarjetas se generarán dinámicamente -->
+      </div>
     </div>
    </section>
    
