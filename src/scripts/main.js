@@ -107,9 +107,15 @@ function createStayCards(filteredStays = stays) {
     cardContainer.appendChild(card);
   });
 
-  staysCounter.textContent = `${filteredStays.length} ${
-    filteredStays.length === 1 ? "stay" : "stays"
-  }`;
+  // Contador con límite de 12+
+  const totalStays = filteredStays.length;
+  if (totalStays > 12) {
+    staysCounter.textContent = "12+ stays";
+  } else {
+    staysCounter.textContent = `${totalStays} ${
+      totalStays === 1 ? "stay" : "stays"
+    }`;
+  }
 }
 
 // Función para aplicar filtros
